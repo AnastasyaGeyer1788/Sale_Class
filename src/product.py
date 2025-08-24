@@ -38,9 +38,7 @@ class Product:
         self.__price = new_price
 
     @classmethod
-    def new_product(
-            cls, product_data: dict, products_list: Optional[List['Product']] = None
-    ) -> 'Product':
+    def new_product(cls, product_data: dict, products_list: Optional[List["Product"]] = None) -> "Product":
         """
         Класс-метод для создания нового товара или обновления существующего.
         """

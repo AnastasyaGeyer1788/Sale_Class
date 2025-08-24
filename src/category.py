@@ -7,7 +7,7 @@ class Category:
     category_count = 0
     product_count = 0
 
-    def __init__(self, name: str, description: str, products: Optional[List['Product']] = None):
+    def __init__(self, name: str, description: str, products: Optional[List["Product"]] = None):
         """
         Конструктор класса Category.
         :param name: Название категории
@@ -21,7 +21,7 @@ class Category:
         Category.category_count += 1
         Category.product_count += len(self.__products)
 
-    def add_product(self, product: 'Product') -> None:
+    def add_product(self, product: "Product") -> None:
         """
         Добавляет товар в категорию с проверкой типа.
         :param product: Объект класса Product для добавления
@@ -40,7 +40,5 @@ class Category:
         """
         products_list = []
         for product in self.__products:
-            products_list.append(
-                f"{product.name}, {product.price} руб. Остаток: {product.quantity} шт."
-            )
+            products_list.append(f"{product.name}, {product.price} руб. Остаток: {product.quantity} шт.")
         return products_list

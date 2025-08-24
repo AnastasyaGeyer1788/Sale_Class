@@ -27,7 +27,7 @@ def create_objects_from_json(data: List[Dict[str, Any]]) -> List[Category]:
                     name=product_data["name"],
                     description=product_data["description"],
                     price=product_data["price"],
-                    quantity=product_data["quantity"]
+                    quantity=product_data["quantity"],
                 )
                 products.append(product)
             except KeyError as e:
@@ -38,10 +38,7 @@ def create_objects_from_json(data: List[Dict[str, Any]]) -> List[Category]:
                 continue
 
         # Создаем категорию и добавляем продукты через метод add_product
-        category = Category(
-            name=category_data["name"],
-            description=category_data["description"]
-        )
+        category = Category(name=category_data["name"], description=category_data["description"])
 
         # Добавляем продукты в категорию
         for product in products:
