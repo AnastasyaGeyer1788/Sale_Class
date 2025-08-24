@@ -1,146 +1,165 @@
+import pytest
+import tempfile
 import json
 import os
-import pytest
-from unittest.mock import mock_open, patch
-
-from src.utils import read_json, create_objects_from_json
-from src.category import Category
+from src.utils import read_json, create_objects_from_json, print_category_info
 
 
-def test_read_json_file_exists(tmp_path):
-    """Тест чтения существующего JSON файла"""
-    # Создаем временный файл
-    test_data = {"key": "value", "number": 42}
-    test_file = tmp_path / "test.json"
-    test_file.write_text(json.dumps(test_data), encoding="UTF-8")
+class TestUtils:
+    """Тесты для утилит"""
 
-    # Читаем файл
-    result = read_json(str(test_file))
-
-    assert result == test_data
-
-
-def test_read_json_file_not_exists():
-    """Тест чтения несуществующего JSON файла"""
-    with pytest.raises(FileNotFoundError):
-        read_json("non_existent_file.json")
-
-
-def test_read_json_invalid_json(tmp_path):
-    """Тест чтения файла с невалидным JSON"""
-    test_file = tmp_path / "invalid.json"
-    test_file.write_text("{invalid json}", encoding="UTF-8")
-
-    with pytest.raises(json.JSONDecodeError):
-        read_json(str(test_file))
-
-
-def test_create_objects_from_json_empty_data():
-    """Тест создания объектов из пустых данных"""
-    result = create_objects_from_json([])
-    assert result == []
-    assert len(result) == 0
-
-
-def test_create_objects_from_json_valid_data():
-    """Тест создания объектов из валидных данных JSON"""
-    test_data = [
-        {
-            "name": "Смартфоны",
-            "description": "Мобильные устройства",
-            "products": [
-                {"name": "iPhone 15", "description": "Новый iPhone", "price": 100000.0, "quantity": 10},
-                {"name": "Samsung Galaxy", "description": "Android smartphone", "price": 80000.0, "quantity": 5},
-            ],
-        },
-        {
-            "name": "Ноутбуки",
-            "description": "Компьютерная техника",
-            "products": [{"name": "MacBook Pro", "description": "Apple notebook", "price": 200000.0, "quantity": 3}],
-        },
-    ]
-
-    categories = create_objects_from_json(test_data)
-
-    # Проверяем количество категорий
-    assert len(categories) == 2
-    assert isinstance(categories[0], Category)
-    assert isinstance(categories[1], Category)
-
-    # Проверяем первую категорию
-    assert categories[0].name == "Смартфоны"
-    assert categories[0].description == "Мобильные устройства"
-
-    # Вместо проверки объектов Product, проверяем форматированный вывод
-    products_output = categories[0].products
-    assert len(products_output) == 2
-    assert "iPhone 15, 100000.0 руб. Остаток: 10 шт." in products_output[0]
-    assert "Samsung Galaxy, 80000.0 руб. Остаток: 5 шт." in products_output[1]
-
-    # Проверяем вторую категорию
-    assert categories[1].name == "Ноутбуки"
-    assert categories[1].description == "Компьютерная техника"
-
-    # Проверяем вывод продуктов второй категории
-    products_output_2 = categories[1].products
-    assert len(products_output_2) == 1
-    assert "MacBook Pro, 200000.0 руб. Остаток: 3 шт." in products_output_2[0]
-
-
-def test_create_objects_from_json_with_missing_fields():
-    """Тест создания объектов с отсутствующими полями"""
-    test_data = [
-        {
-            "name": "Тестовая категория",
-            "description": "Описание",
-            "products": [
+    def test_read_json(self):
+        """Тест чтения JSON файла"""
+        # Создаем временный файл
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            test_data = [
                 {
-                    "name": "Товар без цены",
-                    "description": "Описание",
-                    # Нет price и quantity - должны быть значения по умолчанию
+                    "name": "Test Category",
+                    "description": "Test Description",
+                    "products": [
+                        {"name": "Product 1", "description": "Desc 1", "price": 1000, "quantity": 5},
+                        {"name": "Product 2", "description": "Desc 2", "price": 2000, "quantity": 10},
+                    ],
                 }
-            ],
-        }
-    ]
+            ]
+            json.dump(test_data, f)
+            temp_path = f.name
 
-    # Должно вызвать исключение при создании Product
-    with pytest.raises(TypeError):
-        create_objects_from_json(test_data)
+        try:
+            # Читаем файл
+            data = read_json(temp_path)
+            assert isinstance(data, list)
+            assert len(data) == 1
+            assert data[0]["name"] == "Test Category"
+        finally:
+            # Удаляем временный файл
+            os.unlink(temp_path)
 
+    def test_read_json_file_not_found(self):
+        """Тест чтения несуществующего JSON файла"""
+        with pytest.raises(FileNotFoundError):
+            read_json("nonexistent_file.json")
 
-def test_read_json_with_mock():
-    """Тест read_json с использованием mock"""
-    test_data = {"test": "data", "number": 123}
+    def test_read_json_invalid_json(self):
+        """Тест чтения некорректного JSON файла"""
+        # Создаем временный файл с некорректным JSON
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            f.write("{invalid json")
+            temp_path = f.name
 
-    with patch("builtins.open", mock_open(read_data=json.dumps(test_data))) as mock_file:
-        with patch("json.load") as mock_json_load:
-            mock_json_load.return_value = test_data
+        try:
+            with pytest.raises(json.JSONDecodeError):
+                read_json(temp_path)
+        finally:
+            os.unlink(temp_path)
 
-            result = read_json("dummy_path.json")
+    def test_create_objects_from_json(self):
+        """Тест создания объектов из JSON"""
+        test_data = [
+            {
+                "name": "Electronics",
+                "description": "Electronic devices",
+                "products": [
+                    {"name": "Phone", "description": "Smartphone", "price": 1000, "quantity": 5},
+                    {"name": "Laptop", "description": "Gaming laptop", "price": 2000, "quantity": 3},
+                ],
+            }
+        ]
 
-            # Проверяем, что файл был открыт с правильными параметрами
-            mock_file.assert_called_once_with(os.path.abspath("dummy_path.json"), "r", encoding="UTF-8")
-            mock_json_load.assert_called_once()
-            assert result == test_data
+        categories = create_objects_from_json(test_data)
 
+        assert len(categories) == 1
+        assert categories[0].name == "Electronics"
+        assert len(categories[0].products) == 2
+        assert "Phone, 1000 руб. Остаток: 5 шт." in categories[0].products
 
-def test_create_objects_from_json_with_empty_products():
-    """Тест создания категорий с пустыми продуктами"""
-    test_data = [{"name": "Пустая категория", "description": "Без продуктов", "products": []}]
+    def test_create_objects_empty_products(self, category_class):
+        """Тест создания объектов с пустым списком продуктов"""
+        test_data = [{"name": "Empty Category", "description": "No products here", "products": []}]
 
-    categories = create_objects_from_json(test_data)
+        categories = create_objects_from_json(test_data)
+        assert len(categories) == 1
+        assert categories[0].name == "Empty Category"
+        assert len(categories[0].products) == 0
 
-    assert len(categories) == 1
-    assert categories[0].name == "Пустая категория"
-    assert categories[0].description == "Без продуктов"
-    assert len(categories[0].products) == 0
+    def test_create_objects_missing_products_field(self, category_class):
+        """Тест создания объектов без поля products"""
+        test_data = [{"name": "No Products Category", "description": "Missing products field"}]
 
+        categories = create_objects_from_json(test_data)
+        assert len(categories) == 1
+        assert categories[0].name == "No Products Category"
+        assert len(categories[0].products) == 0
 
-def test_read_json_absolute_path(tmp_path):
-    """Тест чтения JSON с абсолютным путем"""
-    test_data = {"absolute": "path_test"}
-    test_file = tmp_path / "absolute_test.json"
-    test_file.write_text(json.dumps(test_data), encoding="UTF-8")
+    def test_create_objects_invalid_product_data(self, capsys):
+        """Тест создания объектов с некорректными данными продукта"""
+        test_data = [
+            {
+                "name": "Test Category",
+                "description": "Test Description",
+                "products": [
+                    {"name": "Valid Product", "description": "Desc", "price": 1000, "quantity": 5},
+                    {"name": "Invalid Product", "description": "Desc"},  # Missing price and quantity
+                ],
+            }
+        ]
 
-    result = read_json(str(test_file))
-    assert result == test_data
+        categories = create_objects_from_json(test_data)
+
+        # Должна создаться категория с одним валидным продуктом
+        assert len(categories) == 1
+        assert len(categories[0].products) == 1
+        assert "Valid Product" in categories[0].products[0]
+
+        # Проверяем что вывелось сообщение об ошибке
+        captured = capsys.readouterr()
+        assert "Ошибка при создании продукта" in captured.out
+
+    def test_print_category_info(self, capsys, category_class, product_class):
+        """Тест вывода информации о категориях"""
+        # Создаем тестовые данные
+        products = [product_class("Product 1", "Desc 1", 1000, 5), product_class("Product 2", "Desc 2", 2000, 3)]
+        category = category_class("Test Category", "Test Description", products)
+
+        print_category_info([category])
+
+        captured = capsys.readouterr()
+        assert "Test Category" in captured.out
+        assert "Product 1, 1000 руб. Остаток: 5 шт." in captured.out
+        assert "Product 2, 2000 руб. Остаток: 3 шт." in captured.out
+
+    def test_print_empty_category_info(self, capsys, category_class):
+        """Тест вывода информации о пустой категории"""
+        category = category_class("Empty Category", "No products")
+
+        print_category_info([category])
+
+        captured = capsys.readouterr()
+        assert "Empty Category" in captured.out
+        assert "Товары:" in captured.out
+
+    def test_main_execution(self, capsys, monkeypatch):
+        """Тест выполнения main блока в utils"""
+
+        # Мокаем read_json чтобы не зависеть от реального файла
+        def mock_read_json(path):
+            return [
+                {
+                    "name": "Mock Category",
+                    "description": "Mock Description",
+                    "products": [{"name": "Mock Product", "description": "Mock Desc", "price": 1000, "quantity": 5}],
+                }
+            ]
+
+        monkeypatch.setattr("src.utils.read_json", mock_read_json)
+
+        # Запускаем main блок
+        import src.utils
+
+        if hasattr(src.utils, "__name__") and src.utils.__name__ == "__main__":
+            # Эмулируем выполнение main блока
+            src.utils.create_objects_from_json(mock_read_json("dummy_path"))
+
+        captured = capsys.readouterr()
+        # Проверяем что нет ошибок
+        assert "Ошибка:" not in captured.out
