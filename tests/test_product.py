@@ -1,80 +1,78 @@
+import pytest
 from src.product import Product
 
 
-def test_product_initialization_int_price():
-    """Тест инициализации продукта с целочисленной ценой"""
-    product = Product("Samsung Galaxy", "256GB, Серый", 180000, 5)
+class TestProduct:
+    """Тесты для класса Product"""
 
-    assert product.name == "Samsung Galaxy"
-    assert product.description == "256GB, Серый"
-    assert product.price == 180000
-    assert isinstance(product.price, int)
-    assert product.quantity == 5
+    def test_product_creation(self, product_class):
+        """Тест создания продукта"""
+        product = product_class("Test Product", "Test Description", 1000, 10)
+        assert product.name == "Test Product"
+        assert product.description == "Test Description"
+        assert product.price == 1000
+        assert product.quantity == 10
 
+    def test_price_getter_setter(self, product_class):
+        """Тест геттера и сеттера цены"""
+        product = product_class("Test Product", "Test Description", 1000, 10)
 
-def test_product_initialization_float_price():
-    """Тест инициализации продукта с дробной ценой"""
-    product = Product("iPhone", "512GB, Space Gray", 210000.99, 8)
+        # Проверяем геттер
+        assert product.price == 1000
 
-    assert product.name == "iPhone"
-    assert product.description == "512GB, Space Gray"
-    assert product.price == 210000.99
-    assert isinstance(product.price, float)
-    assert product.quantity == 8
+        # Проверяем сеттер с валидным значением
+        product.price = 1500
+        assert product.price == 1500
 
+        # Проверяем сеттер с невалидным значением
+        with pytest.raises(ValueError, match="Цена не должна быть нулевая или отрицательная"):
+            product.price = -100
 
-def test_product_price_types_mixed():
-    """Тест работы с разными типами цен в разных продуктах"""
-    # Целое число
-    product1 = Product("Test 1", "Desc", 100, 5)
-    assert product1.price == 100
-    assert isinstance(product1.price, int)
+    def test_negative_price_creation(self, product_class):
+        """Тест создания продукта с отрицательной ценой"""
+        with pytest.raises(ValueError, match="Цена не должна быть нулевая или отрицательная"):
+            product_class("Test Product", "Test Description", -100, 10)
 
-    # Дробное число
-    product2 = Product("Test 2", "Desc", 99.99, 5)
-    assert product2.price == 99.99
-    assert isinstance(product2.price, float)
+    def test_float_price(self, product_class):
+        """Тест работы с float ценой"""
+        product = product_class("Test Product", "Test Description", 999.99, 10)
+        assert product.price == 999.99
 
+    def test_new_product_creation(self, product_class):
+        """Тест создания нового продукта через classmethod"""
+        product_data = {"name": "New Product", "description": "New Description", "price": 1500, "quantity": 20}
 
-def test_product_zero_price_int():
-    """Тест продукта с нулевой целочисленной ценой"""
-    product = Product("Free Product", "Description", 0, 10)
-    assert product.price == 0
-    assert isinstance(product.price, int)
+        product = product_class.new_product(product_data)
+        assert product.name == "New Product"
+        assert product.price == 1500
+        assert product.quantity == 20
 
+    def test_new_product_update_existing(self, product_class):
+        """Тест обновления существующего продукта"""
+        # Создаем первый продукт
+        existing_product = product_class("Existing Product", "Desc", 1000, 10)
 
-def test_product_zero_price_float():
-    """Тест продукта с нулевой дробной ценой"""
-    product = Product("Free Product", "Description", 0.0, 10)
-    assert product.price == 0.0
-    assert isinstance(product.price, float)
+        # Пытаемся создать "новый" продукт с тем же именем
+        product_data = {"name": "Existing Product", "description": "Updated Desc", "price": 1200, "quantity": 5}
 
+        updated_product = product_class.new_product(product_data, [existing_product])
 
-def test_product_decimal_price():
-    """Тест продукта с десятичной ценой"""
-    product = Product("Test Product", "Description", 123.45, 7)
-    assert product.price == 123.45
-    assert isinstance(product.price, float)
+        # Должен вернуться существующий продукт с обновленными данными
+        assert updated_product is existing_product
+        assert updated_product.quantity == 15  # 10 + 5
+        assert updated_product.price == 1200  # Новая цена выше
+        assert updated_product.description == "Updated Desc"
 
+    def test_new_product_missing_name(self, product_class):
+        """Тест создания продукта без имени"""
+        product_data = {"description": "Description", "price": 1000, "quantity": 10}
 
-def test_product_large_int_price():
-    """Тест продукта с большой целочисленной ценой"""
-    product = Product("Expensive", "Very expensive", 1000000, 1)
-    assert product.price == 1000000
-    assert isinstance(product.price, int)
+        with pytest.raises(ValueError, match="Название товара должно быть указано"):
+            product_class.new_product(product_data)
 
+    def test_new_product_negative_price(self, product_class):
+        """Тест создания продукта с отрицательной ценой через new_product"""
+        product_data = {"name": "Test Product", "description": "Test Description", "price": -100, "quantity": 10}
 
-def test_product_large_float_price():
-    """Тест продукта с большой дробной ценой"""
-    product = Product("Very Expensive", "Extremely expensive", 999999.99, 1)
-    assert product.price == 999999.99
-    assert isinstance(product.price, float)
-
-
-def test_product_attributes_types():
-    """Тест типов атрибутов продукта"""
-    product = Product("Test", "Description", 1000, 10)
-    assert isinstance(product.name, str)
-    assert isinstance(product.description, str)
-    assert isinstance(product.price, (int, float))
-    assert isinstance(product.quantity, int)
+        with pytest.raises(ValueError, match="Цена не должна быть нулевая или отрицательная"):
+            product_class.new_product(product_data)
