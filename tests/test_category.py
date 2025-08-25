@@ -1,5 +1,4 @@
 import pytest
-from src.category import Category
 from src.product import Product
 
 
@@ -36,12 +35,80 @@ class TestCategory:
 
     def test_counters(self, category_class, sample_products):
         """Тест счетчиков категорий и продуктов"""
-        # Сбрасываем счетчики перед тестом
+        # Сбрасываем счетчики
         category_class.category_count = 0
         category_class.product_count = 0
 
-        category1 = category_class("Category 1", "Desc 1", sample_products[:2])
-        category2 = category_class("Category 2", "Desc 2", sample_products[2:])
+        # Создаем категории
+        category1 = category_class("Category 1", "Desc 1")
+        category2 = category_class("Category 2", "Desc 2")
+
+        # Добавляем продукты вручную, чтобы увеличить счетчик
+        for product in sample_products[:2]:
+            category1.add_product(product)
+        for product in sample_products[2:]:
+            category2.add_product(product)
+
+        # Проверяем что категории созданы правильно
+        assert category1.name == "Category 1"
+        assert category2.name == "Category 2"  # Убрали лишний пробел
+        assert len(category1.products) == 2
+        assert len(category2.products) == 1
 
         assert category_class.category_count == 2
-        assert category_class.product_count == 3
+        # Общее количество товаров: 5 + 8 + 12 = 25
+        assert category_class.product_count == 25
+
+    # Новые тесты для магических методов Category
+    def test_str_representation(self, category_class, sample_products):
+        """Тест строкового представления категории"""
+        category = category_class("Электроника", "Техника", sample_products)
+
+        # Сумма quantity всех продуктов: 5 + 8 + 12 = 25
+        expected_str = "Электроника, количество продуктов: 25 шт."
+        assert str(category) == expected_str
+
+    def test_str_representation_empty_category(self, category_class):
+        """Тест строкового представления пустой категории"""
+        category = category_class("Электроника", "Техника")
+
+        expected_str = "Электроника, количество продуктов: 0 шт."
+        assert str(category) == expected_str
+
+    def test_total_products_quantity(self, category_class, sample_products):
+        """Тест геттера общего количества товаров"""
+        category = category_class("Электроника", "Техника", sample_products)
+
+        assert category.total_products_quantity == 25  # 5 + 8 + 12
+
+    def test_products_getter_uses_str_method(self, category_class, sample_products):
+        """Тест что геттер products использует __str__ метод продуктов"""
+        category = category_class("Электроника", "Техника", sample_products)
+
+        products_list = category.products
+
+        # Проверяем что все элементы являются строковыми представлениями продуктов
+        assert products_list[0] == "Product 1, 1000 руб. Остаток: 5 шт."
+        assert products_list[1] == "Product 2, 2000.0 руб. Остаток: 8 шт."
+        assert products_list[2] == "Product 3, 3000.5 руб. Остаток: 12 шт."
+
+    def test_category_counters_with_quantity(self, category_class):
+        """Тест, что счетчики правильно учитывают quantity продуктов"""
+        # Сбрасываем счетчики
+        category_class.category_count = 0
+        category_class.product_count = 0
+
+        products = [Product("Product 1", "Desc 1", 1000, 10), Product("Product 2", "Desc 2", 2000, 5)]
+
+        category = category_class("Test Category", "Test Description")
+
+        # Добавляем продукты через add_product чтобы увеличить счетчики
+        for product in products:
+            category.add_product(product)
+
+        # Проверяем что категория создана правильно
+        assert category.name == "Test Category"
+        assert len(category.products) == 2
+
+        # Должно быть 15 товаров (10 + 5)
+        assert category_class.product_count == 15
