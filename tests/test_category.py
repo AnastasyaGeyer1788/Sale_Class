@@ -196,6 +196,6 @@ class TestCategoryProductValidation:
         assert len(category.products) == 3
 
     def test_initialization_with_valid_products(self, category_class, sample_products):
-        """Тест инициализации категории с валидными продуктами"""
+        """Тест инициализации категории с продуктами"""
         category = category_class("Test Category", "Test Description", sample_products)
         assert len(category.products) == 3

@@ -32,7 +32,7 @@ class TestUtils:
             assert len(data) == 1
             assert data[0]["name"] == "Test Category"
         finally:
-            # Удаляем временный файл
+            # Удаляем файл(временный)
             os.unlink(temp_path)
 
     def test_read_json_file_not_found(self):

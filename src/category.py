@@ -19,7 +19,7 @@ class Category:
         self.__products = products if products else []  # Приватный атрибут
 
         Category.category_count += 1
-        # Обновляем общее количество товаров (суммируем quantity)
+        # Обновляем общее количество товаров
 
     def __str__(self) -> str:
         """

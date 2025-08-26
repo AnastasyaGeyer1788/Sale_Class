@@ -37,7 +37,7 @@ def create_objects_from_json(data: List[Dict[str, Any]]) -> List[Category]:
                 print(f"Ошибка при создании продукта: {e}")
                 continue
 
-        # Создаем категорию и добавляем продукты через метод add_product
+        # Создаем категорию и добавляем продукты через add_product
         category = Category(name=category_data["name"], description=category_data["description"])
 
         # Добавляем продукты в категорию

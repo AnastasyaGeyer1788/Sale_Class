@@ -38,7 +38,7 @@ class TestProduct:
         assert product.price == 999.99
 
     def test_new_product_creation(self, product_class):
-        """Тест создания нового продукта через class method"""
+        """Тест создания нового продукта"""
         product_data = {"name": "New Product", "description": "New Description", "price": 1500, "quantity": 20}
 
         product = product_class.new_product(product_data)

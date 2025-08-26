@@ -62,7 +62,7 @@ if __name__ == '__main__':
     try:
         invalid_sum = smartphone1 + grass1
     except TypeError:
-        print("Возникла ошибка TypeError при попытке сложения")
+        print("Возникла ошибка TypeError при попытке сложения продуктов")
     else:
         print("Не возникла ошибка TypeError при попытке сложения")
 
