@@ -72,7 +72,6 @@ if __name__ == "__main__":
 
         # Дополнительные проверки
         if categories:
-            print(f"\n--- Детальная информация ---")
             print(f"Всего категорий: {Category.category_count}")
             print(f"Всего товаров: {Category.product_count}")
 
