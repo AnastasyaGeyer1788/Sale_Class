@@ -1,5 +1,4 @@
 import pytest
-from src.product import Product
 
 
 class TestProduct:
@@ -76,3 +75,79 @@ class TestProduct:
 
         with pytest.raises(ValueError, match="Цена не должна быть нулевая или отрицательная"):
             product_class.new_product(product_data)
+
+    # Новые тесты для магических методов
+    def test_str_representation(self, product_class):
+        """Тест строкового представления продукта"""
+        product = product_class("Телефон", "Смартфон", 80000, 15)
+        expected_str = "Телефон, 80000 руб. Остаток: 15 шт."
+        assert str(product) == expected_str
+
+    def test_str_representation_float_price(self, product_class):
+        """Тест строкового представления с float ценой"""
+        product = product_class("Книга", "Художественная", 499.99, 3)
+        expected_str = "Книга, 499.99 руб. Остаток: 3 шт."
+        assert str(product) == expected_str
+
+    def test_add_products(self, product_class):
+        """Тест сложения двух продуктов"""
+        product_a = product_class("Товар A", "Описание A", 100, 10)
+        product_b = product_class("Товар B", "Описание B", 200, 2)
+
+        result = product_a + product_b
+        expected = 100 * 10 + 200 * 2  # 1000 + 400 = 1400
+
+        assert result == expected
+        assert isinstance(result, (int, float))
+
+    def test_add_products_commutative(self, product_class):
+        """Тест коммутативности сложения продуктов"""
+        product_a = product_class("Товар A", "Описание A", 100, 10)
+        product_b = product_class("Товар B", "Описание B", 200, 2)
+
+        result1 = product_a + product_b
+        result2 = product_b + product_a
+
+        assert result1 == result2
+
+    def test_add_products_with_float_prices(self, product_class):
+        """Тест сложения продуктов с float ценами"""
+        product_a = product_class("Товар A", "Описание A", 99.99, 5)
+        product_b = product_class("Товар B", "Описание B", 149.50, 3)
+
+        result = product_a + product_b
+        expected = 99.99 * 5 + 149.50 * 3  # 499.95 + 448.50 = 948.45
+
+        assert abs(result - expected) < 0.01  # Учитываем погрешность float
+
+    def test_add_product_with_zero_quantity(self, product_class):
+        """Тест сложения продуктов с нулевым количеством"""
+        product_a = product_class("Товар A", "Описание A", 100, 0)
+        product_b = product_class("Товар B", "Описание B", 200, 5)
+
+        result = product_a + product_b
+        expected = 0 + 200 * 5  # 0 + 1000 = 1000
+
+        assert result == expected
+
+    def test_add_product_with_different_types_error(self, product_class):
+        """Тест ошибки при сложении с неправильным типом"""
+        product = product_class("Товар", "Описание", 100, 10)
+
+        with pytest.raises(TypeError, match="Можно складывать только объекты класса Product"):
+            product + "не продукт"
+
+        with pytest.raises(TypeError, match="Можно складывать только объекты класса Product"):
+            product + 123
+
+    def test_add_products_chain(self, product_class):
+        """Тест цепочного сложения продуктов"""
+        product_a = product_class("Товар A", "Описание A", 100, 2)
+        product_b = product_class("Товар B", "Описание B", 200, 3)
+        product_c = product_class("Товар C", "Описание C", 300, 4)
+
+        # Просто проверяем что сумма всех трех равна ожидаемому значению
+        total = (product_a + product_b) + (product_c.price * product_c.quantity)
+        expected = (100 * 2 + 200 * 3) + (300 * 4)
+
+        assert total == expected

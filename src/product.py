@@ -19,6 +19,25 @@ class Product:
         if price <= 0:
             raise ValueError("Цена не должна быть нулевая или отрицательная")
 
+    def __str__(self) -> str:
+        """
+        Магический метод для строкового представления объекта.
+        :return: Строка в формате "Название продукта, цена руб. Остаток: количество шт."
+        """
+        return f"{self.name}, {self.price} руб. Остаток: {self.quantity} шт."
+
+    def __add__(self, other: "Product") -> Union[int, float]:
+        """
+        Магический метод для сложения продуктов.
+        Возвращает суммарную стоимость всех товаров на складе.
+        :param other: Другой объект класса Product
+        :return: Сумма (цена * количество) для обоих продуктов
+        """
+        if not isinstance(other, Product):
+            raise TypeError("Можно складывать только объекты класса Product")
+
+        return (self.price * self.quantity) + (other.price * other.quantity)
+
     @property
     def price(self) -> Union[int, float]:
         """
