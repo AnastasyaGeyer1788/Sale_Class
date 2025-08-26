@@ -39,7 +39,6 @@ def __init__(self, name: str, description: str, price: Union[int, float], quanti
 def __init__(self, name: str, description: str, products: list[Product]):
 
 ```
-
 ### Специализированные классы товаров
 
 #### Smartphone (наследник Product)

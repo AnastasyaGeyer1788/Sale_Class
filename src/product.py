@@ -94,7 +94,7 @@ class Smartphone(Product):
     """Класс для представления смартфонов, наследник Product.
     :param name: Название продукта
     :param description: Описание продукта
-    :param price: Цена продукта
+    :param price: Цена
     :param quantity: Количество доступных единиц продукта
     :param efficiency: Производительность
     :param model: Модель

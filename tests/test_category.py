@@ -179,7 +179,7 @@ class TestCategoryProductValidation:
             category.add_product(custom_obj)
 
     def test_add_multiple_valid_products(self, category_class, sample_product):
-        """Тест добавления нескольких валидных продуктов разных типов"""
+        """Тест добавления нескольких продуктов разных типов"""
         category = category_class("Test Category", "Test Description")
 
         # Обычный продукт

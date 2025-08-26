@@ -50,7 +50,7 @@ def create_objects_from_json(data: List[Dict[str, Any]]) -> List[Category]:
 
 
 def print_category_info(categories: List[Category]) -> None:
-    """Выводит информацию о категориях и их товарах"""
+    """Выводит информацию о категориях и товарах"""
     for i, category in enumerate(categories, 1):
         print(f"\n--- Категория {i}: {category.name} ---")
         print(f"Описание: {category.description}")
