@@ -34,8 +34,13 @@ class Category:
         Добавляет товар в категорию с проверкой типа.
         :param product: Объект класса Product для добавления
         """
+        # Проверяем, что объект является экземпляром Product или его подклассов
         if not isinstance(product, Product):
-            raise TypeError("Можно добавлять только объекты класса Product")
+            raise TypeError("Можно добавлять только объекты класса Product или его наследников")
+
+        # Дополнительная проверка с помощью issubclass
+        if not issubclass(type(product), Product):
+            raise TypeError("Можно добавлять только объекты класса Product или его наследников")
 
         self.__products.append(product)
         Category.product_count += product.quantity
@@ -51,7 +56,7 @@ class Category:
     @property
     def total_products_quantity(self) -> int:
         """
-        Новый геттер для получения общего количества товаров в категории.
+        Геттер для получения общего количества товаров в категории.
         :return: Сумма quantity всех продуктов в категории
         """
         return sum(product.quantity for product in self.__products)
