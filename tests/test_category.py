@@ -1,5 +1,5 @@
 import pytest
-from src.product import Product
+from src.product import Product, Smartphone, LawnGrass
 
 
 class TestCategory:
@@ -35,10 +35,6 @@ class TestCategory:
 
     def test_counters(self, category_class, sample_products):
         """Тест счетчиков категорий и продуктов"""
-        # Сбрасываем счетчики
-        category_class.category_count = 0
-        category_class.product_count = 0
-
         # Создаем категории
         category1 = category_class("Category 1", "Desc 1")
         category2 = category_class("Category 2", "Desc 2")
@@ -51,7 +47,7 @@ class TestCategory:
 
         # Проверяем что категории созданы правильно
         assert category1.name == "Category 1"
-        assert category2.name == "Category 2"  # Убрали лишний пробел
+        assert category2.name == "Category 2"
         assert len(category1.products) == 2
         assert len(category2.products) == 1
 
@@ -59,7 +55,6 @@ class TestCategory:
         # Общее количество товаров: 5 + 8 + 12 = 25
         assert category_class.product_count == 25
 
-    # Новые тесты для магических методов Category
     def test_str_representation(self, category_class, sample_products):
         """Тест строкового представления категории"""
         category = category_class("Электроника", "Техника", sample_products)
@@ -94,15 +89,11 @@ class TestCategory:
 
     def test_category_counters_with_quantity(self, category_class):
         """Тест, что счетчики правильно учитывают quantity продуктов"""
-        # Сбрасываем счетчики
-        category_class.category_count = 0
-        category_class.product_count = 0
-
         products = [Product("Product 1", "Desc 1", 1000, 10), Product("Product 2", "Desc 2", 2000, 5)]
 
         category = category_class("Test Category", "Test Description")
 
-        # Добавляем продукты через add_product чтобы увеличить счетчики
+        # Добавляем продукты через add_product, чтобы увеличить счетчики
         for product in products:
             category.add_product(product)
 
@@ -112,3 +103,99 @@ class TestCategory:
 
         # Должно быть 15 товаров (10 + 5)
         assert category_class.product_count == 15
+
+
+class TestCategoryProductValidation:
+    """Тесты для проверки валидации типов продуктов в категории"""
+
+    def test_add_valid_product(self, category_class, sample_product):
+        """Тест добавления валидного продукта"""
+        category = category_class("Test Category", "Test Description")
+        category.add_product(sample_product)
+        assert len(category.products) == 1
+
+    def test_add_smartphone_product(self, category_class):
+        """Тест добавления смартфона (наследник Product)"""
+        category = category_class("Test Category", "Test Description")
+        smartphone = Smartphone("iPhone", "Smartphone", 100000, 5, "High", "15 Pro", 256, "Black")
+
+        category.add_product(smartphone)
+        assert len(category.products) == 1
+
+    def test_add_lawn_grass_product(self, category_class):
+        """Тест добавления газонной травы (наследник Product)"""
+        category = category_class("Test Category", "Test Description")
+        lawn_grass = LawnGrass("Premium Grass", "Lawn grass", 5000, 20, "Germany", 14, "Green")
+
+        category.add_product(lawn_grass)
+        assert len(category.products) == 1
+
+    def test_add_invalid_string_product(self, category_class):
+        """Тест добавления строки вместо продукта"""
+        category = category_class("Test Category", "Test Description")
+
+        with pytest.raises(TypeError, match="Можно добавлять только объекты класса Product или его наследников"):
+            category.add_product("invalid product")
+
+    def test_add_integer_product(self, category_class):
+        """Тест добавления числа вместо продукта"""
+        category = category_class("Test Category", "Test Description")
+
+        with pytest.raises(TypeError, match="Можно добавлять только объекты класса Product или его наследников"):
+            category.add_product(123)
+
+    def test_add_list_product(self, category_class):
+        """Тест добавления списка вместо продукта"""
+        category = category_class("Test Category", "Test Description")
+
+        with pytest.raises(TypeError, match="Можно добавлять только объекты класса Product или его наследников"):
+            category.add_product(["product1", "product2"])
+
+    def test_add_dict_product(self, category_class):
+        """Тест добавления словаря вместо продукта"""
+        category = category_class("Test Category", "Test Description")
+
+        with pytest.raises(TypeError, match="Можно добавлять только объекты класса Product или его наследников"):
+            category.add_product({"name": "test", "price": 100})
+
+    def test_add_none_product(self, category_class):
+        """Тест добавления None вместо продукта"""
+        category = category_class("Test Category", "Test Description")
+
+        with pytest.raises(TypeError, match="Можно добавлять только объекты класса Product или его наследников"):
+            category.add_product(None)
+
+    def test_add_custom_object_product(self, category_class):
+        """Тест добавления пользовательского объекта вместо продукта"""
+
+        class CustomObject:
+            def __init__(self, name):
+                self.name = name
+
+        category = category_class("Test Category", "Test Description")
+        custom_obj = CustomObject("test")
+
+        with pytest.raises(TypeError, match="Можно добавлять только объекты класса Product или его наследников"):
+            category.add_product(custom_obj)
+
+    def test_add_multiple_valid_products(self, category_class, sample_product):
+        """Тест добавления нескольких валидных продуктов разных типов"""
+        category = category_class("Test Category", "Test Description")
+
+        # Обычный продукт
+        product1 = sample_product
+        # Смартфон
+        product2 = Smartphone("Smartphone", "Desc", 50000, 3, "High", "Model", 128, "Blue")
+        # Газонная трава
+        product3 = LawnGrass("Grass", "Desc", 2000, 10, "USA", 10, "Green")
+
+        category.add_product(product1)
+        category.add_product(product2)
+        category.add_product(product3)
+
+        assert len(category.products) == 3
+
+    def test_initialization_with_valid_products(self, category_class, sample_products):
+        """Тест инициализации категории с валидными продуктами"""
+        category = category_class("Test Category", "Test Description", sample_products)
+        assert len(category.products) == 3

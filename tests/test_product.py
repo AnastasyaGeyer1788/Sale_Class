@@ -76,7 +76,6 @@ class TestProduct:
         with pytest.raises(ValueError, match="Цена не должна быть нулевая или отрицательная"):
             product_class.new_product(product_data)
 
-    # Новые тесты для магических методов
     def test_str_representation(self, product_class):
         """Тест строкового представления продукта"""
         product = product_class("Телефон", "Смартфон", 80000, 15)
@@ -151,3 +150,45 @@ class TestProduct:
         expected = (100 * 2 + 200 * 3) + (300 * 4)
 
         assert total == expected
+
+
+class TestProductAdditionValidation:
+    """Тесты для проверки сложения продуктов разных категорий"""
+
+    def test_add_same_category_products(self, product_class):
+        """Тест сложения продуктов одной категории"""
+        product1 = product_class("Product 1", "Desc", 100, 5)
+        product2 = product_class("Product 2", "Desc", 200, 3)
+
+        result = product1 + product2
+        assert result == 100 * 5 + 200 * 3
+
+    def test_add_different_category_products_error(self):
+        """Тест ошибки при сложении продуктов разных категорий"""
+        from src.product import Smartphone, LawnGrass
+
+        smartphone = Smartphone("Phone", "Desc", 50000, 2, "High", "Model", 128, "Black")
+        lawn_grass = LawnGrass("Grass", "Desc", 2000, 5, "USA", 10, "Green")
+
+        with pytest.raises(TypeError, match="Нельзя складывать товары разных категорий"):
+            smartphone + lawn_grass
+
+    def test_add_smartphones(self):
+        """Тест сложения смартфонов"""
+        from src.product import Smartphone
+
+        smartphone1 = Smartphone("Phone 1", "Desc", 50000, 2, "High", "Model", 128, "Black")
+        smartphone2 = Smartphone("Phone 2", "Desc", 60000, 3, "High", "Model", 256, "White")
+
+        result = smartphone1 + smartphone2
+        assert result == 50000 * 2 + 60000 * 3
+
+    def test_add_lawn_grasses(self):
+        """Тест сложения газонных трав"""
+        from src.product import LawnGrass
+
+        grass1 = LawnGrass("Grass 1", "Desc", 2000, 5, "USA", 10, "Green")
+        grass2 = LawnGrass("Grass 2", "Desc", 2500, 3, "Germany", 14, "Dark Green")
+
+        result = grass1 + grass2
+        assert result == 2000 * 5 + 2500 * 3
