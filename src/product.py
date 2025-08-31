@@ -36,6 +36,10 @@ class Product:
         if not isinstance(other, Product):
             raise TypeError("Можно складывать только объекты класса Product")
 
+        # Проверяем, что объекты одного типа
+        if type(self) is not type(other):
+            raise TypeError("Нельзя складывать товары разных категорий")
+
         return (self.price * self.quantity) + (other.price * other.quantity)
 
     @property
@@ -84,3 +88,73 @@ class Product:
                     return existing_product
 
         return cls(name, description, price, quantity)
+
+
+class Smartphone(Product):
+    """Класс для представления смартфонов, наследник Product.
+    :param name: Название продукта
+    :param description: Описание
+    :param price: Цена
+    :param quantity: Количество доступных единиц продукта
+    :param efficiency: Производительность
+    :param model: Модель
+    :param memory: Объем встроенной памяти
+    :param color: Цвет
+    """
+
+    def __init__(
+        self,
+        name: str,
+        description: str,
+        price: Union[int, float],
+        quantity: int,
+        efficiency: str,
+        model: str,
+        memory: int,
+        color: str,
+    ):
+        super().__init__(name, description, price, quantity)
+        self.efficiency = efficiency
+        self.model = model
+        self.memory = memory
+        self.color = color
+
+    def __str__(self) -> str:
+        """Переопределение строкового представления для смартфона."""
+        base_str = super().__str__()
+        return (f"{base_str}\nПроизводительность: {self.efficiency}, Модель: {self.model},\n"
+                f" Память: {self.memory}GB, Цвет: {self.color}")
+
+
+class LawnGrass(Product):
+    """Класс для представления газонной травы, наследник Product.
+    :param name: Название продукта
+    :param description: Описание продукта
+    :param price: Цена продукта
+    :param quantity: Количество доступных единиц продукта
+    :param country: Страна-производитель
+    :param germination_period: Срок прорастания (в днях)
+    :param color: Цвет
+    """
+
+    def __init__(
+        self,
+        name: str,
+        description: str,
+        price: Union[int, float],
+        quantity: int,
+        country: str,
+        germination_period: int,
+        color: str,
+    ):
+        super().__init__(name, description, price, quantity)
+        self.country = country
+        self.germination_period = germination_period
+        self.color = color
+
+    def __str__(self) -> str:
+        """Переопределение строкового представления для газонной травы."""
+        base_str = super().__str__()
+        return (
+            f"{base_str}\nСтрана: {self.country}, Срок прорастания: {self.germination_period} дней, Цвет: {self.color}"
+        )
