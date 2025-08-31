@@ -1,23 +1,120 @@
-from typing import Union, List, Optional
+# src/product.py
+from abc import ABC, abstractmethod
+from typing import Union, List, Optional, TypeVar, Type
+
+# Создаем TypeVar для гибких аннотаций типов
+T = TypeVar("T", bound="BaseProduct")
 
 
-class Product:
-    """Класс Product представляет товар в магазине.
-    :param name: Название продукта
-    :param description: Описание продукта
-    :param price: Цена продукта
-    :param quantity: Количество доступных единиц продукта
-    """
+class CreationLoggerMixin:
+    """Миксин для логирования создания объектов."""
+
+    def __init__(self, *args, **kwargs):
+        """
+        Инициализация миксина. Логирует информацию о создании объекта.
+        """
+        # Сохраняем аргументы для последующего использования
+        self._init_args = args
+        self._init_kwargs = kwargs
+
+        # Формируем информацию о параметрах
+        params_info = []
+
+        # Добавляем позиционные аргументы
+        if args:
+            params_info.append(f"args={args}")
+
+        # Добавляем именованные аргументы
+        if kwargs:
+            params_info.append(f"kwargs={kwargs}")
+
+        # Формируем полное сообщение
+        params_str = ", ".join(params_info) if params_info else "без параметров"
+
+        # Выводим информацию о создании объекта
+        print(f"Создан объект класса {self.__class__.__name__} с параметрами: {params_str}")
+
+        # Вызываем __init__ следующего класса в MRO
+        super().__init__(*args, **kwargs)
+
+    def __repr__(self) -> str:
+        """
+        Магический метод для официального строкового представления объекта.
+        :return: Строка в формате для воссоздания объекта
+        """
+        # Формируем список аргументов для repr
+        args_repr = []
+
+        # Добавляем позиционные аргументы
+        for arg in self._init_args:
+            if isinstance(arg, str):
+                args_repr.append(f"'{arg}'")
+            else:
+                args_repr.append(repr(arg))
+
+        # Добавляем именованные аргументы
+        for key, value in self._init_kwargs.items():
+            if isinstance(value, str):
+                args_repr.append(f"{key}='{value}'")
+            else:
+                args_repr.append(f"{key}={repr(value)}")
+
+        return f"{self.__class__.__name__}({', '.join(args_repr)})"
+
+
+class BaseProduct(ABC):
+    """Абстрактный базовый класс для всех продуктов."""
 
     def __init__(self, name: str, description: str, price: Union[int, float], quantity: int):
         self.name = name
         self.description = description
-        self.__price = price  # Приватный атрибут цены
+        self.__price = price  # Приватный атрибут цены в базовом классе
         self.quantity = quantity
 
-        # Проверяем цену при инициализации
         if price <= 0:
             raise ValueError("Цена не должна быть нулевая или отрицательная")
+
+    @abstractmethod
+    def __str__(self) -> str:
+        """Абстрактный метод для строкового представления объекта."""
+        pass
+
+    @abstractmethod
+    def __add__(self, other: "BaseProduct") -> Union[int, float]:
+        """Абстрактный метод для сложения продуктов."""
+        pass
+
+    @property
+    def price(self) -> Union[int, float]:
+        """
+        Геттер для получения цены товара.
+        :return: Цена товара
+        """
+        return self.__price
+
+    @price.setter
+    def price(self, new_price: Union[int, float]) -> None:
+        """
+        Сеттер для установки цены товара с проверкой.
+        :param new_price: Новая цена товара
+        """
+        if new_price <= 0:
+            raise ValueError("Цена не должна быть нулевая или отрицательная")
+        self.__price = new_price
+
+    @classmethod
+    @abstractmethod
+    def new_product(cls: Type[T], product_data: dict, products_list: Optional[List[T]] = None) -> T:
+        """Абстрактный класс-метод для создания нового товара."""
+        pass
+
+
+class Product(CreationLoggerMixin, BaseProduct):
+    """Класс Product представляет товар в магазине."""
+
+    def __init__(self, name: str, description: str, price: Union[int, float], quantity: int):
+        # Вызываем инициализацию миксина и базового класса
+        super().__init__(name=name, description=description, price=price, quantity=quantity)
 
     def __str__(self) -> str:
         """
@@ -41,24 +138,6 @@ class Product:
             raise TypeError("Нельзя складывать товары разных категорий")
 
         return (self.price * self.quantity) + (other.price * other.quantity)
-
-    @property
-    def price(self) -> Union[int, float]:
-        """
-        Геттер для получения цены товара.
-        :return: Цена товара
-        """
-        return self.__price
-
-    @price.setter
-    def price(self, new_price: Union[int, float]) -> None:
-        """
-        Сеттер для установки цены товара с проверкой.
-        :param new_price: Новая цена товара
-        """
-        if new_price <= 0:
-            raise ValueError("Цена не должна быть нулевая или отрицательная")
-        self.__price = new_price
 
     @classmethod
     def new_product(cls, product_data: dict, products_list: Optional[List["Product"]] = None) -> "Product":
@@ -91,16 +170,7 @@ class Product:
 
 
 class Smartphone(Product):
-    """Класс для представления смартфонов, наследник Product.
-    :param name: Название продукта
-    :param description: Описание
-    :param price: Цена
-    :param quantity: Количество доступных единиц продукта
-    :param efficiency: Производительность
-    :param model: Модель
-    :param memory: Объем встроенной памяти
-    :param color: Цвет
-    """
+    """Класс для представления смартфонов, наследник Product."""
 
     def __init__(
         self,
@@ -113,29 +183,42 @@ class Smartphone(Product):
         memory: int,
         color: str,
     ):
-        super().__init__(name, description, price, quantity)
         self.efficiency = efficiency
         self.model = model
         self.memory = memory
         self.color = color
 
+        # Вызываем __init__ родительского класса
+        super().__init__(name=name, description=description, price=price, quantity=quantity)
+
     def __str__(self) -> str:
         """Переопределение строкового представления для смартфона."""
         base_str = super().__str__()
-        return (f"{base_str}\nПроизводительность: {self.efficiency}, Модель: {self.model},\n"
-                f" Память: {self.memory}GB, Цвет: {self.color}")
+        return (
+            f"{base_str}\nПроизводительность: {self.efficiency}, Модель: {self.model},\n"
+            f" Память: {self.memory}GB, Цвет: {self.color}"
+        )
+
+    def __repr__(self) -> str:
+        """Переопределение repr для смартфона."""
+        base_repr = super().__repr__()[:-1]  # Убираем закрывающую скобку
+        return (
+            f"{base_repr}, efficiency='{self.efficiency}', model='{self.model}', "
+            f"memory={self.memory}, color='{self.color}')"
+        )
+
+    def __add__(self, other: "Smartphone") -> Union[int, float]:
+        """
+        Переопределение метода сложения для смартфонов.
+        """
+        if not isinstance(other, Smartphone):
+            raise TypeError("Можно складывать только объекты класса Smartphone")
+
+        return super().__add__(other)
 
 
 class LawnGrass(Product):
-    """Класс для представления газонной травы, наследник Product.
-    :param name: Название продукта
-    :param description: Описание продукта
-    :param price: Цена продукта
-    :param quantity: Количество доступных единиц продукта
-    :param country: Страна-производитель
-    :param germination_period: Срок прорастания (в днях)
-    :param color: Цвет
-    """
+    """Класс для представления газонной травы, наследник Product."""
 
     def __init__(
         self,
@@ -147,10 +230,12 @@ class LawnGrass(Product):
         germination_period: int,
         color: str,
     ):
-        super().__init__(name, description, price, quantity)
         self.country = country
         self.germination_period = germination_period
         self.color = color
+
+        # Вызываем __init__ родительского класса
+        super().__init__(name=name, description=description, price=price, quantity=quantity)
 
     def __str__(self) -> str:
         """Переопределение строкового представления для газонной травы."""
@@ -158,3 +243,20 @@ class LawnGrass(Product):
         return (
             f"{base_str}\nСтрана: {self.country}, Срок прорастания: {self.germination_period} дней, Цвет: {self.color}"
         )
+
+    def __repr__(self) -> str:
+        """Переопределение repr для газонной травы."""
+        base_repr = super().__repr__()[:-1]  # Убираем закрывающую скобку
+        return (
+            f"{base_repr}, country='{self.country}', germination_period={self.germination_period}, "
+            f"color='{self.color}')"
+        )
+
+    def __add__(self, other: "LawnGrass") -> Union[int, float]:
+        """
+        Переопределение метода сложения для газонной травы.
+        """
+        if not isinstance(other, LawnGrass):
+            raise TypeError("Можно складывать только объекты класса LawnGrass")
+
+        return super().__add__(other)
