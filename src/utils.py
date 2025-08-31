@@ -1,6 +1,6 @@
 import json
 import os
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Tuple
 
 from src.category import Category
 from src.product import Product
@@ -14,9 +14,10 @@ def read_json(path: str) -> List[Dict[str, Any]]:
     return data
 
 
-def create_objects_from_json(data: List[Dict[str, Any]]) -> List[Category]:
+def create_objects_from_json(data: List[Dict[str, Any]]) -> Tuple[List[Category], List[Product]]:
     """Создает объекты Category и Product из данных JSON"""
     categories = []
+    all_products = []
 
     for category_data in data:
         # Создаем продукты для этой категории
@@ -30,6 +31,7 @@ def create_objects_from_json(data: List[Dict[str, Any]]) -> List[Category]:
                     quantity=product_data["quantity"],
                 )
                 products.append(product)
+                all_products.append(product)
             except KeyError as e:
                 print(f"Ошибка при создании продукта: отсутствует поле {e}")
                 continue
@@ -37,16 +39,17 @@ def create_objects_from_json(data: List[Dict[str, Any]]) -> List[Category]:
                 print(f"Ошибка при создании продукта: {e}")
                 continue
 
-        # Создаем категорию и добавляем продукты через add_product
-        category = Category(name=category_data["name"], description=category_data["description"])
+        # Создаем категорию
+        try:
+            category = Category(
+                name=category_data["name"], description=category_data["description"], products=products
+            )
+            categories.append(category)
+        except KeyError as e:
+            print(f"Ошибка при создании категории: отсутствует поле {e}")
+            continue
 
-        # Добавляем продукты в категорию
-        for product in products:
-            category.add_product(product)
-
-        categories.append(category)
-
-    return categories
+    return categories, all_products
 
 
 def print_category_info(categories: List[Category]) -> None:
@@ -65,21 +68,20 @@ if __name__ == "__main__":
         data = read_json("../data/products.json")
 
         # Создаем объекты
-        categories = create_objects_from_json(data)
+        categories, products = create_objects_from_json(data)
 
         # Выводим информацию
         print_category_info(categories)
 
         # Дополнительные проверки
         if categories:
-            print(f"Всего категорий: {Category.category_count}")
+            print(f"\nВсего категорий: {Category.category_count}")
             print(f"Всего товаров: {Category.product_count}")
 
             # Пример доступа к конкретному товару
             first_category = categories[0]
             if first_category.products:
-                first_product = first_category.products[0]
-                print(f"Первый товар: {first_product}")
+                print(f"Первый товар в первой категории: {first_category.products[0]}")
 
     except FileNotFoundError:
         print("Ошибка: Файл products.json не найден!")
