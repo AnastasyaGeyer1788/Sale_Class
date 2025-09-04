@@ -7,10 +7,10 @@ from src.utils import read_json, create_objects_from_json, print_category_info
 
 
 class TestUtils:
-    """Тесты для утилит"""
+    """Тесты для утилит."""
 
     def test_read_json(self):
-        """Тест чтения JSON файла"""
+        """Тест чтения JSON файла."""
         # Создаем временный файл
         with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
             test_data = [
@@ -37,12 +37,12 @@ class TestUtils:
             os.unlink(temp_path)
 
     def test_read_json_file_not_found(self):
-        """Тест чтения несуществующего JSON файла"""
+        """Тест чтения несуществующего JSON файла."""
         with pytest.raises(FileNotFoundError):
             read_json("nonexistent_file.json")
 
     def test_read_json_invalid_json(self):
-        """Тест чтения некорректного JSON файла"""
+        """Тест чтения некорректного JSON файла."""
         # Создаем временный файл с некорректным JSON
         with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
             f.write("{invalid json")
@@ -161,7 +161,7 @@ class TestUtils:
         assert "Товары:" in captured.out
 
     def test_print_multiple_categories(self, capsys):
-        """Тест вывода информации о нескольких категориях"""
+        """Тест вывода информации о нескольких категориях."""
         from src.category import Category
         from src.product import Product
 
@@ -182,7 +182,7 @@ class TestUtils:
     @patch("src.utils.create_objects_from_json")
     @patch("src.utils.print_category_info")
     def test_main_execution_success(self, mock_print, mock_create, mock_read, capsys):
-        """Тест успешного выполнения main блока"""
+        """Тест успешного выполнения main блока."""
         # Мокируем возвращаемые значения
         mock_read.return_value = [{"name": "Test", "description": "Test", "products": []}]
         mock_create.return_value = ([MagicMock()], [MagicMock()])
@@ -219,7 +219,7 @@ class TestUtils:
 
     @patch('src.utils.read_json')
     def test_main_execution_file_not_found(self, mock_read, capsys):
-        """Тест обработки ошибки файла не найден в main блоке"""
+        """Тест обработки ошибки файла не найден в main блоке."""
         mock_read.side_effect = FileNotFoundError("File not found")
 
         import src.utils
@@ -237,7 +237,7 @@ class TestUtils:
 
     @patch("builtins.open")
     def test_read_json_encoding(self, mock_open):
-        """Тест чтения JSON с правильной кодировкой"""
+        """Тест чтения JSON с правильной кодировкой."""
         mock_file = mock_open.return_value.__enter__.return_value
         mock_file.read.return_value = '[{"name": "Test"}]'
 

@@ -10,8 +10,14 @@ class CreationLoggerMixin:
     """Миксин для логирования создания объектов."""
 
     def __init__(self, *args, **kwargs):
-        """
-        Инициализация миксина. Логирует информацию о создании объекта.
+        """Инициализация миксина.
+
+        Сохраняет переданные аргументы для последующего использования
+         и выводит информацию о создании объекта.
+
+        Args:
+        *args: Позиционные аргументы
+        **kwargs: Именованные аргументы
         """
         # Сохраняем аргументы для последующего использования
         self._init_args = args
@@ -40,6 +46,7 @@ class CreationLoggerMixin:
     def __repr__(self) -> str:
         """
         Магический метод для официального строкового представления объекта.
+
         :return: Строка в формате для воссоздания объекта
         """
         # Формируем список аргументов для repr
@@ -66,6 +73,7 @@ class BaseProduct(ABC):
     """Абстрактный базовый класс для всех продуктов."""
 
     def __init__(self, name: str, description: str, price: Union[int, float], quantity: int):
+        """Инициализирует продукт с именем и ценой."""
         self.name = name
         self.description = description
         self.__price = price  # Приватный атрибут цены в базовом классе
@@ -88,6 +96,7 @@ class BaseProduct(ABC):
     def price(self) -> Union[int, float]:
         """
         Геттер для получения цены товара.
+
         :return: Цена товара
         """
         return self.__price
@@ -96,6 +105,7 @@ class BaseProduct(ABC):
     def price(self, new_price: Union[int, float]) -> None:
         """
         Сеттер для установки цены товара с проверкой.
+
         :param new_price: Новая цена товара
         """
         if new_price <= 0:
@@ -113,12 +123,13 @@ class Product(CreationLoggerMixin, BaseProduct):
     """Класс Product представляет товар в магазине."""
 
     def __init__(self, name: str, description: str, price: Union[int, float], quantity: int):
-        # Вызываем инициализацию миксина и базового класса
+        """Вызываем инициализацию миксина и базового класса"""
         super().__init__(name=name, description=description, price=price, quantity=quantity)
 
     def __str__(self) -> str:
         """
         Магический метод для строкового представления объекта.
+
         :return: Строка в формате "Название продукта, цена руб. Остаток: количество шт."
         """
         return f"{self.name}, {self.price} руб. Остаток: {self.quantity} шт."
@@ -126,7 +137,7 @@ class Product(CreationLoggerMixin, BaseProduct):
     def __add__(self, other: "Product") -> Union[int, float]:
         """
         Магический метод для сложения продуктов.
-        Возвращает суммарную стоимость всех товаров на складе.
+
         :param other: Другой объект класса Product
         :return: Сумма (цена * количество) для обоих продуктов
         """
@@ -141,9 +152,7 @@ class Product(CreationLoggerMixin, BaseProduct):
 
     @classmethod
     def new_product(cls, product_data: dict, products_list: Optional[List["Product"]] = None) -> "Product":
-        """
-        Класс-метод для создания нового товара или обновления существующего.
-        """
+        """Класс-метод для создания нового товара или обновления существующего."""
         name = product_data.get("name")
         description = product_data.get("description", "")
         price = product_data.get("price", 0)
@@ -174,15 +183,16 @@ class Smartphone(Product):
 
     def __init__(
         self,
-        name: str,
-        description: str,
-        price: Union[int, float],
-        quantity: int,
-        efficiency: str,
-        model: str,
-        memory: int,
-        color: str,
-    ):
+            name: str,
+            description: str,
+            price: Union[int, float],
+            quantity: int,
+            efficiency: str,
+            model: str,
+            memory: int,
+            color: str,
+    ) -> object:
+        """:rtype: object"""
         self.efficiency = efficiency
         self.model = model
         self.memory = memory
@@ -208,9 +218,7 @@ class Smartphone(Product):
         )
 
     def __add__(self, other: "Smartphone") -> Union[int, float]:
-        """
-        Переопределение метода сложения для смартфонов.
-        """
+        """Переопределение метода сложения для смартфонов."""
         if not isinstance(other, Smartphone):
             raise TypeError("Можно складывать только объекты класса Smartphone")
 
@@ -230,6 +238,17 @@ class LawnGrass(Product):
         germination_period: int,
         color: str,
     ):
+        """Инициализирует экземпляр газонной травы.
+
+        Args:
+            name (str): Название газонной травы
+            description (str): Описание газонной травы
+            price (Union[int, float]): Цена газонной травы
+            quantity (int): Количество доступного товара
+            country (str): Страна-производитель
+            germination_period (int): Срок прорастания в днях
+            color (str): Цвет газонной травы
+        """
         self.country = country
         self.germination_period = germination_period
         self.color = color
@@ -253,9 +272,7 @@ class LawnGrass(Product):
         )
 
     def __add__(self, other: "LawnGrass") -> Union[int, float]:
-        """
-        Переопределение метода сложения для газонной травы.
-        """
+        """Переопределение метода сложения для газонной травы."""
         if not isinstance(other, LawnGrass):
             raise TypeError("Можно складывать только объекты класса LawnGrass")
 

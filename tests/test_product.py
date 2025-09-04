@@ -117,7 +117,7 @@ class TestLawnGrassWithMixin:
         assert "Создан объект класса LawnGrass" in captured.out
 
     def test_lawn_grass_str_representation(self, lawn_grass_class):
-        """Тест строкового представления газонной травы"""
+        """Тест строкового представления газонной травы."""
         grass = lawn_grass_class("Premium Grass", "Lawn grass", 2500, 10, "Germany", 14, "Green")
 
         str_repr = str(grass)
