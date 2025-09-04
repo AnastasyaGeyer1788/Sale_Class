@@ -3,13 +3,15 @@ from src.product import Product
 
 
 class Category:
-    # Атрибуты класса
+    """Класс для представления категории товаров."""
+
     category_count = 0
     product_count = 0
 
     def __init__(self, name: str, description: str, products: Optional[List["Product"]] = None):
         """
         Конструктор класса Category.
+
         :param name: Название категории
         :param description: Описание категории
         :param products: Список товаров в категории
@@ -24,6 +26,7 @@ class Category:
     def __str__(self) -> str:
         """
         Магический метод для строкового представления объекта Category.
+
         :return: Строка в формате "Название категории, количество продуктов: X шт."
         """
         total_products = sum(product.quantity for product in self.__products)
@@ -32,6 +35,7 @@ class Category:
     def add_product(self, product: "Product") -> None:
         """
         Добавляет товар в категорию с проверкой типа.
+
         :param product: Объект класса Product для добавления
         """
         # Проверяем, что объект является экземпляром Product или его подклассов
@@ -47,16 +51,14 @@ class Category:
 
     @property
     def products(self) -> List[str]:
-        """
-        Геттер для вывода списка товаров.
-        Теперь использует строковое представление объектов Product.
-        """
+        """Геттер для вывода списка товаров."""
         return [str(product) for product in self.__products]
 
     @property
     def total_products_quantity(self) -> int:
         """
         Геттер для получения общего количества товаров в категории.
+
         :return: Сумма quantity всех продуктов в категории
         """
         return sum(product.quantity for product in self.__products)
