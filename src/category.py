@@ -21,7 +21,9 @@ class Category:
         self.__products = products if products else []  # Приватный атрибут
 
         Category.category_count += 1
-        # Обновляем общее количество товаров
+        # Обновляем общее количество товаров для начальных продуктов
+        for product in self.__products:
+            Category.product_count += product.quantity
 
     def __str__(self) -> str:
         """
@@ -46,6 +48,10 @@ class Category:
         if not issubclass(type(product), Product):
             raise TypeError("Можно добавлять только объекты класса Product или его наследников")
 
+        # Проверяем, что количество товара не равно нулю
+        if product.quantity == 0:
+            raise ValueError("Товар с нулевым количеством не может быть добавлен")
+
         self.__products.append(product)
         Category.product_count += product.quantity
 
@@ -62,3 +68,37 @@ class Category:
         :return: Сумма quantity всех продуктов в категории
         """
         return sum(product.quantity for product in self.__products)
+
+    def get_average_price(self) -> float:
+        """
+        Метод для подсчета среднего ценника всех товаров в категории.
+
+        :return: Средняя цена товаров в категории или 0, если товаров нет
+        """
+        try:
+            # Пытаемся вычислить среднюю цену
+            total_price = sum(product.price * product.quantity for product in self.__products)
+            total_quantity = self.total_products_quantity
+
+            # Проверяем, что общее количество не равно нулю
+            if total_quantity == 0:
+                return 0.0
+
+            average_price = total_price / total_quantity
+            return round(average_price, 2)
+
+        except ZeroDivisionError:
+            # Обрабатываем случай деления на ноль
+            return 0.0
+        except Exception as e:
+            # Обрабатываем любые другие исключения
+            print(f"Произошла ошибка при вычислении средней цены: {e}")
+            return 0.0
+
+    def middle_price(self) -> float:
+        """
+        Для совместимости с тестовым файлом.
+
+        Вызывает get_average_price().
+        """
+        return self.get_average_price()

@@ -1,4 +1,3 @@
-# src/product.py
 from abc import ABC, abstractmethod
 from typing import Union, List, Optional, TypeVar, Type
 
@@ -77,6 +76,11 @@ class BaseProduct(ABC):
         self.name = name
         self.description = description
         self.__price = price  # Приватный атрибут цены в базовом классе
+
+        # Проверка на нулевое количество
+        if quantity == 0:
+            raise ValueError("Товар с нулевым количеством не может быть добавлен")
+
         self.quantity = quantity
 
         if price <= 0:
@@ -164,9 +168,17 @@ class Product(CreationLoggerMixin, BaseProduct):
         if price <= 0:
             raise ValueError("Цена не должна быть нулевая или отрицательная")
 
+        # Проверка на нулевое количество при создании нового товара
+        if quantity == 0:
+            raise ValueError("Товар с нулевым количеством не может быть добавлен")
+
         if products_list:
             for existing_product in products_list:
                 if existing_product.name.lower() == name.lower():
+                    # При обновлении существующего товара проверяем, чтобы итоговое количество не стало нулевым
+                    if existing_product.quantity + quantity == 0:
+                        raise ValueError("Товар с нулевым количеством не может быть добавлен")
+
                     existing_product.quantity += quantity
                     # Используем сеттер для установки цены
                     if price > existing_product.price:
@@ -183,16 +195,17 @@ class Smartphone(Product):
 
     def __init__(
         self,
-            name: str,
-            description: str,
-            price: Union[int, float],
-            quantity: int,
-            efficiency: str,
-            model: str,
-            memory: int,
-            color: str,
+        name: str,
+        description: str,
+        price: Union[int, float],
+        quantity: int,
+        efficiency: str,
+        model: str,
+        memory: int,
+        color: str,
     ) -> object:
         """:rtype: object"""
+        # Проверка выполняется в родительском классе BaseProduct
         self.efficiency = efficiency
         self.model = model
         self.memory = memory
@@ -211,7 +224,7 @@ class Smartphone(Product):
 
     def __repr__(self) -> str:
         """Переопределение repr для смартфона."""
-        base_repr = super().__repr__()[:-1]  # Убираем закрывающую скобку
+        base_repr = super().__repr__()[:-1]
         return (
             f"{base_repr}, efficiency='{self.efficiency}', model='{self.model}', "
             f"memory={self.memory}, color='{self.color}')"
@@ -249,6 +262,7 @@ class LawnGrass(Product):
             germination_period (int): Срок прорастания в днях
             color (str): Цвет газонной травы
         """
+        # Проверка выполняется в родительском классе BaseProduct
         self.country = country
         self.germination_period = germination_period
         self.color = color

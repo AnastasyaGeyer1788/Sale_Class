@@ -217,12 +217,13 @@ class TestUtils:
         mock_create.assert_called_once_with(mock_read.return_value)
         mock_print.assert_called_once()
 
-    @patch('src.utils.read_json')
+    @patch("src.utils.read_json")
     def test_main_execution_file_not_found(self, mock_read, capsys):
         """Тест обработки ошибки файла не найден в main блоке."""
         mock_read.side_effect = FileNotFoundError("File not found")
 
         import src.utils
+
         if src.utils.__name__ == "__main__":
             src.utils.read_json = mock_read
 

@@ -152,12 +152,6 @@ class TestBackwardCompatibility:
 class TestProductEdgeCases:
     """Тесты для крайних случаев Product"""
 
-    def test_product_creation_zero_quantity(self, product_class):
-        """Тест создания продукта с нулевым количеством"""
-        product = product_class("Test", "Desc", 100, 0)
-        assert product.quantity == 0
-        assert str(product) == "Test, 100 руб. Остаток: 0 шт."
-
     def test_product_negative_price_creation(self, product_class):
         """Тест создания продукта с отрицательной ценой"""
         with pytest.raises(ValueError, match="Цена не должна быть нулевая или отрицательная"):
@@ -217,15 +211,6 @@ class TestProductAdditionEdgeCases:
         result = product_a + product_b
         expected = 99.99 * 5 + 149.50 * 3
         assert abs(result - expected) < 0.01
-
-    def test_add_product_with_zero_quantity(self, product_class):
-        """Тест сложения продуктов с нулевым количеством"""
-        product_a = product_class("Товар A", "Описание A", 100, 0)
-        product_b = product_class("Товар B", "Описание B", 200, 5)
-
-        result = product_a + product_b
-        expected = 0 + 200 * 5
-        assert result == expected
 
     def test_add_products_commutative(self, product_class):
         """Тест коммутативности сложения продуктов"""
