@@ -10,6 +10,22 @@ def product_class():
 
 
 @pytest.fixture
+def smartphone_class():
+    """Фикстура возвращает класс Smartphone для использования в тестах"""
+    from src.product import Smartphone
+
+    return Smartphone
+
+
+@pytest.fixture
+def lawn_grass_class():
+    """Фикстура возвращает класс LawnGrass для использования в тестах"""
+    from src.product import LawnGrass
+
+    return LawnGrass
+
+
+@pytest.fixture
 def category_class():
     """Фикстура возвращает класс Category для использования в тестах"""
     from src.category import Category
@@ -40,10 +56,18 @@ def sample_category(category_class, sample_products):
 
 
 @pytest.fixture(autouse=True)
-def reset_counters(category_class):
+def reset_counters():
     """Автоматический сброс счетчиков перед каждым тестом"""
-    category_class.category_count = 0
-    category_class.product_count = 0
+    from src.category import Category
+
+    Category.category_count = 0
+    Category.product_count = 0
     yield
-    category_class.category_count = 0
-    category_class.product_count = 0
+    Category.category_count = 0
+    Category.product_count = 0
+
+
+@pytest.fixture(autouse=True)
+def capture_console_output(capsys):
+    """Автоматический захват вывода в консоль для тестов миксина"""
+    yield capsys
